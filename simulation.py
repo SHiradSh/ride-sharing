@@ -10,8 +10,8 @@ class Simulation:
     This is the class which is responsible for setting up and running a
     simulation.
 
-    The API is given to you: your main task is to implement the two methods
-    according to their docstrings.
+    The API is given to you: your main task is to implement the run
+    method below according to its docstring.
 
     Of course, you may add whatever private attributes and methods you want.
     But because you should not change the interface, you may not add any public
@@ -35,6 +35,7 @@ class Simulation:
         @type self: Simulation
         @rtype: None
         """
+
         self._events = PriorityQueue()
         self._dispatcher = Dispatcher()
         self._monitor = Monitor()
@@ -50,14 +51,22 @@ class Simulation:
             An initial list of events.
         @rtype: dict[str, object]
         """
-        # TODO
-        pass
 
         # Add all initial events to the event queue.
+        for event in initial_events:
+            self._events.add(event)
 
         # Until there are no more events, remove an event
         # from the event queue and do it. Add any returned
         # events to the event queue.
+        while not self._events.is_empty():
+
+            event_to_do = self._events.remove()
+            print(event_to_do)
+            new_events = event_to_do.do(self._dispatcher, self._monitor)
+
+            for new_event in new_events:
+                self._events.add(new_event)
 
         return self._monitor.report()
 
