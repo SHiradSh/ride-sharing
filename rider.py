@@ -17,42 +17,54 @@ SATISFIED = "satisfied"
 
 
 class Rider:
-    def __init__(self, identifier, origin, destination, status, patience):
-        """Initialize an rider.
 
-        @type self: Rider
-        @type identifier: int
-        @type origin: str
-        @type destination: str
-        @type status: str
-        @type patience: int
-        @rtype: None
+    def __init__(self, identifier, origin, destination, patience):
         """
-        self.identifier = identifier
+        Create a Rider object with id, origin and destination
+
+        :param identifier:
+            Unique identifier for the rider
+
+        :type identifier: str
+
+        :param origin:
+            The location where the rider wants to be picked up
+
+        :type origin: Location
+
+        :param destination:
+            The location to which the rider wishes to be driven
+
+        :type destination: Location
+
+        :param patience:
+            The number of minutes the rider will wait before cancelling
+
+        :type patience: int
+
+        :rtype: None
+        """
+
+        self.id = identifier
         self.origin = origin
         self.destination = destination
-        self.status = status
         self.patience = patience
+        # Set them to be waiting on default
+        self.status = WAITING
 
     def __str__(self):
         """Return a string representation.
-
         @type self: Rider
         @rtype: str
-        """
-        return "(ID:{}, Origin:{}, Destination:{}, Status:{}, Patience:{})"\
-            .format(self.identifier, self.origin, self.destination,\
-                    self.status, self.patience)
 
-    def __eq__(self, other):
-        """Return True if self equals other, and false otherwise.
-
-        @type self: Rider
-        @type other: Rider | other
-        @rtype: bool
+        >>> name1 = 'Jane Doe'
+        >>> origin1 = Location(10,13)
+        >>> destination1 = Location(1,2)
+        >>> patience1 = 20
+        >>> rider = Rider(name1, origin1, destination1, patience1)
+        >>> print(rider)
+        >>> "Jane Does wants to go from 10 streets left, 13 up to 1 streets left, 2 up and is waiting."
         """
-        return (self.identifier == other.identifier)\
-               and (self.origin == other.origin)\
-               and (self.destination == other.destination)\
-               and (self.status == other.status)\
-               and (self.patience == other.patience)
+
+        return "{} wants to go from ({}) to ({}) and is {}"\
+            .format(self.id, self.origin, self.destination, self.status)
