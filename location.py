@@ -7,25 +7,37 @@ class Location:
         @type column: int
         @rtype: None
         """
-        self.row = row
-        self.column = column
+
+        if row >= 0 and column >= 0:
+            self.m = column
+            self.n = row
+        else:
+            print("Please enter only positive coordinates")
 
     def __str__(self):
         """Return a string representation.
 
-        @type self: Location
         @rtype: str
+
+        >>> location1 = Location(5,2)
+        >>> print (location1)
+        "5 streets from the left, 2 streets up"
         """
-        return "({}, {})".format(self.row, self.column)
+
+        return "{} streets from the left, {} streets up".format(self.m, self.n)
 
     def __eq__(self, other):
         """Return True if self equals other, and false otherwise.
 
-        @type self: Location
-        @type other: Location | other
         @rtype: bool
+
+        >>> location1 = Location(5,6)
+        >>> location2 = Location(5,6)
+        >>> location1 == location2
+        True
         """
-        return (self.row == other.row) and (self.column == other.column)
+
+        return self.m == other.m and self.n == other.n
 
 
 def manhattan_distance(origin, destination):
@@ -34,8 +46,17 @@ def manhattan_distance(origin, destination):
     @type origin: Location
     @type destination: Location
     @rtype: int
+
+    >>> origin1 = Location(1,2)
+    >>> destination1 = Location (2,3)
+    >>> manhattan_distance(origin1,destination1)
+    2
     """
-    return (destination.row - origin.row) + (destination.column - origin.column)
+
+    latitude = abs(destination.n - origin.n)
+    longitude = abs(destination.m - origin.m)
+    return longitude + latitude
+
 
 def deserialize_location(location_str):
     """Deserialize a location.
@@ -43,6 +64,20 @@ def deserialize_location(location_str):
     @type location_str: str
         A location in the format 'row,col'
     @rtype: Location
+
+    >>> loc_str = "22,33"
+    >>> deserialize_location(loc_str)
+    "22 streets from the left, 33 streets up"
     """
-    # TODO
-    pass
+
+    row = ""
+
+    i = 0
+
+    while location_str[i] != ",":
+        row += location_str[i]
+        i += 1
+    row = int(row)
+    column = int(location_str[i+1:])
+
+    return Location(column, row)
