@@ -21,6 +21,7 @@ request, cancel, pickup, or dropoff.
 @type DROPOFF: str
     A constant used for the dropoff activity description.
 """
+from location import *
 
 RIDER = "rider"
 DRIVER = "driver"
@@ -77,11 +78,11 @@ class Monitor:
 
         @type self: Monitor
         """
+
         self._activities = {
             RIDER: {},
             DRIVER: {}
         }
-        """@type _activities: dict[str, dict[str, list[Activity]]]"""
 
     def __str__(self):
         """Return a string representation.
@@ -89,6 +90,7 @@ class Monitor:
         @type self: Monitor
         @rtype: str
         """
+
         return "Monitor ({} drivers, {} riders)".format(
                 len(self._activities[DRIVER]), len(self._activities[RIDER]))
 
@@ -108,6 +110,7 @@ class Monitor:
             The location of the activity.
         @rtype: None
         """
+
         if identifier not in self._activities[category]:
             self._activities[category][identifier] = []
 
@@ -119,7 +122,10 @@ class Monitor:
 
         @type self: Monitor
         @rtype: dict[str, object]
+
+        Examples not feasible
         """
+
         return {"rider_wait_time": self._average_wait_time(),
                 "driver_total_distance": self._average_total_distance(),
                 "driver_ride_distance": self._average_ride_distance()}
@@ -131,8 +137,10 @@ class Monitor:
         @type self: Monitor
         @rtype: float
         """
+
         wait_time = 0
         count = 0
+
         for activities in self._activities[RIDER].values():
             # A rider that has less than two activities hasn't finished
             # waiting (they haven't cancelled or been picked up).
@@ -141,6 +149,10 @@ class Monitor:
                 # or CANCEL. The wait time is the difference between the two.
                 wait_time += activities[1].time - activities[0].time
                 count += 1
+
+        if count == 0:
+            return 0
+
         return wait_time / count
 
     def _average_total_distance(self):
@@ -148,15 +160,81 @@ class Monitor:
 
         @type self: Monitor
         @rtype: float
+
+        >>> m = Monitor()
+        >>> m.notify(1, DRIVER, REQUEST, "steve", Location(0, 0))
+        >>> m.notify(2, DRIVER, PICKUP, "steve", Location(0, 5))
+        >>> m.notify(6, DRIVER, DROPOFF, "steve", Location(0, 9))
+        >>> m._average_total_distance()
+            9.0
+        >>> m.notify(7, DRIVER, REQUEST, "tod", Location(0, 0))
+            4.5
+
         """
-        # TODO
-        pass
+
+        total_distance = 0
+
+        for activities in self._activities[DRIVER].values():
+            if len(activities) >= 2:
+                # There has to be more than one registered activity to
+                # calculate the distance between them
+                for i in range(len(activities) - 1):
+                    # The distance travelled between each activity is
+                    # added to total
+                    total_distance += \
+                        manhattan_distance(activities[i].location, activities[i + 1].location)
+
+        if len(self._activities[DRIVER]) == 0:
+            return 0
+
+        return total_distance / len(self._activities[DRIVER])
 
     def _average_ride_distance(self):
         """Return the average distance drivers have driven on rides.
 
         @type self: Monitor
         @rtype: float
+
+        >>> m = Monitor()
+        >>> m.notify(1, DRIVER, REQUEST, "steve", Location(0, 0))
+        >>> m.notify(2, DRIVER, PICKUP, "steve", Location(0, 5))
+        >>> m.notify(6, DRIVER, DROPOFF, "steve", Location(0, 9))
+        >>> m.notify(7, DRIVER, REQUEST, "tod", Location(0, 0))
+        >>> m._average_ride_distance()
+            4.0
+        >>> m.notify(8, DRIVER, PICKUP, "tod", Location(0, 0))
+        >>> m.notify(9, DRIVER, DROPOFF, "tod", Location(0, 1))
+        >>> m._average_ride_distance()
+            2.5
         """
-        # TODO
-        pass
+
+        total_distance = 0
+        count = 0
+
+        for activities in self._activities[DRIVER].values():
+            # keeps track of the pickup and drop off spots
+            pick_up_spot = None
+            drop_off_spot = None
+
+            for i in range(len(activities)):
+
+                # Checks for pickup and drop off activities only
+                if activities[i].description == PICKUP:
+                    pick_up_spot = activities[i].location
+
+                elif activities[i].description == DROPOFF:
+                    drop_off_spot = activities[i].location
+
+                if pick_up_spot is not None and drop_off_spot is not None:
+                    # A complete pickup/drop off pair is completed
+                    total_distance += \
+                        manhattan_distance(pick_up_spot, drop_off_spot)
+                    pick_up_spot = None  # Reset pickup and drop off spot
+                    drop_off_spot = None
+
+                    count += 1
+
+        if count == 0:
+            return 0
+
+        return total_distance / count
